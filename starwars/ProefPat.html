@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Cicilia Pham</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <style>
+            #walker{
+                width:90%;
+                height:90%;
+            }
+            #img-person{
+                width:75%;
+                height:100%;
+            }
+            body{
+                background-color: lightgray;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-2">
+                    <img src="afbeeldingen/ImperialWalker.jpg" class="rounded" id="walker">
+                </div>
+                <div class="col-sm-10">
+                    <h3 class="text-danger">MEMORABLE STAR WARS QUOTES</h3>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <select id="person" onchange="img()">
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <img id="img-person" src="afbeeldingen/1.jpg" class="rounded-circle">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="spreuk">
+                
+            </div>
+            <div>
+                <input type="text" id="tekst" value="" placeholder="spreuk hier">
+                <button class="btn btn-success" onclick="voegToe()">Add</button>
+            </div>
+        </div>
+    </body>
+    <script>
+        "use strict"
+        const Laad = async (karakterid) => {
+            if (karakterid == null| karakterid =="") {
+                karakterid = 1
+            }
+            const response = await fetch(`karakters/${karakterid}/spreuken`);
+            const data = await response.json();
+            const inhoud = document.getElementById("spreuk");
+            inhoud.innerHTML = "";
+            data.forEach(el => inhoud.innerHTML += 
+            `<p>${el.tekst}</p>`);
+        }
+        const laadkarakter = async () => {
+            const response = await fetch("karakters/?karakter=true");
+            const data = await response.json();
+            const inhoud = document.getElementById("person");
+            inhoud.innerHTML = "";
+            data.forEach(el => inhoud.innerHTML += `<option value="${el.id}">${el.naam}</option>`);
+
+            await Laad();
+        }
+        document.addEventListener("DOMContentLoaded", laadkarakter);
+
+        const img = async () => {
+            let selectedPerson = document.getElementById("person").value;
+
+            const response = await fetch(`karakters/${selectedPerson}`);
+            const data = await response.json();
+            console.log(data);
+            data.forEach(el => document.getElementById("img-person").src = el.foto);
+            data.forEach(el => Laad(el.id));
+        }
+
+        const voegToe = async () => {
+            const jsonstring = JSON.stringify({"karakterid":document.querySelector("#person").value, "tekst":document.querySelector("#tekst").value})
+            const respons = await fetch("spreuken/", {method:'POST',
+            body:jsonstring,
+            headers: {'Content-Type': 'application/json'},});
+            console.log('status', respons.status);
+
+            let karakterid = document.querySelector("#person").value;
+
+            const response = await fetch(`karakters/${karakterid}/spreuken`);
+            const data = await response.json();
+            const inhoud = document.getElementById("spreuk");
+            inhoud.innerHTML = "";
+            data.forEach(el => inhoud.innerHTML += 
+            `<p>${el.tekst}</p>`);
+
+            document.querySelector("#tekst").value = "";
+        } 
+    </script>
+</html>
